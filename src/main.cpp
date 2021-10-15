@@ -13,13 +13,12 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 
-#define DHTPIN 5                 // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT22            // DHT 22 (AM2302)
-#define STD_DELAY 1000 * 60 * 10 // 10 minutes
+#define DHTPIN 5      // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT22 // DHT 22 (AM2302)
 
 DHT dht(DHTPIN, DHTTYPE);
 
-uint32_t dthDelayMS;
+uint32_t sampleDelayMS = 1000UL * 60 * 5; // 5 minutes
 
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
@@ -60,7 +59,6 @@ void setup()
 
   client = new HTTPSRedirect(httpsPort);
   client->setInsecure();
-  client->setPrintResponseBody(true);
   client->setContentTypeHeader("application/json");
   bool flag = false;
   for (int i = 0; i < 5; i++)
@@ -137,8 +135,11 @@ void loop()
     Serial.println(client->getResponseBody());
   }
 
-  payload.clear();
+  // Disconnect the client from the server when intervals between requests is too long
+  // Library don't react on long intervals
+  client->stop();
+  payload.clear(); // clear payload for next request (some errors can occur if not)
 
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(STD_DELAY); // 10 minutes
+  delay(sampleDelayMS);
 }
