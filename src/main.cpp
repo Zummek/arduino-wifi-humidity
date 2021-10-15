@@ -7,23 +7,25 @@
 // - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
 // - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
 
+#include "env.h"
 #include <Arduino.h>
 #include <DHT.h>
 #include <HTTPSRedirect.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 
-#define DHTPIN 5      // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT22 // DHT 22 (AM2302)
+#define DHTPIN 5                 // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT22            // DHT 22 (AM2302)
+#define STD_DELAY 1000 * 60 * 10 // 10 minutes
 
 DHT dht(DHTPIN, DHTTYPE);
 
 uint32_t dthDelayMS;
 
-const char *ssid = "To ja twój nowy somsiad"; //replace with our wifi ssid
-const char *password = "dobreWifi";           //replace with your wifi password
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 const char *host = "script.google.com";
-const char *GScriptId = "AKfycbyrXsU_Zglw9tGJZEBzq1MLYW3-G-r1s-etnD_u_PVNWFrOF2ntqlhkBrgQaJUa0xfi4g";
+const char *GScriptId = GOOLGE_SCRIPT_ID;
 const int httpsPort = 443;
 String url = String("/macros/s/") + GScriptId + "/exec";
 
@@ -38,7 +40,7 @@ float humidity;
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
   Serial.begin(115200);
   delay(10);
   dht.begin();
@@ -85,13 +87,13 @@ void setup()
   Serial.println();
 
   delay(2000);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop()
 {
   // Get temperature event and print its value.
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
   if (isnan(temperature) | isnan(humidity))
@@ -138,6 +140,6 @@ void loop()
 
   payload.clear();
 
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000 * 10);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(STD_DELAY); // 10 minutes
 }
