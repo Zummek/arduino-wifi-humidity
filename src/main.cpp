@@ -4,49 +4,59 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 
-#define DHTPIN 5      // Digital pin connected to the DHT sensor
+#define DHTPIN 2      // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22 // DHT 22 (AM2302)
+
+// Debugging - Set to 
+// true to enable debug messages over serial port, 
+// false to disable and use LED to indicate status
+#define DEBUG false
+#define FORCE_LED_ON false
+#define DEBUG_SERIAL if(DEBUG)Serial
+#define IS_LED_ON !DEBUG || FORCE_LED_ON
 
 DHT dht(DHTPIN, DHTTYPE);
 
-uint32_t sampleDelayMS = 1000UL * 60 * 5; // 5 minutes
+const uint32_t measurementDelayMS = 1000UL * 60 * 5; // 5 minutes
 
-const char *ssid = WIFI_SSID;
-const char *password = WIFI_PASSWORD;
-const char *host = "script.google.com";
-const char *GScriptId = GOOLGE_SCRIPT_ID;
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
+const char* host = "script.google.com";
+const char* GScriptId = GOOLGE_SCRIPT_ID;
 const int httpsPort = 443;
 String url = String("/macros/s/") + GScriptId + "/exec";
 
 StaticJsonDocument<128> payload;
 String payloadStr = "";
 
-HTTPSRedirect *client = nullptr;
+HTTPSRedirect* client = nullptr;
 
 float temperature;
 float humidity;
 
 void setup()
 {
+  DEBUG_SERIAL.begin(115200);
+#if IS_LED_ON
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-  Serial.begin(115200);
+#endif
   delay(10);
   dht.begin();
 
-  Serial.println();
-  Serial.print("Connecting to wifi: ");
-  Serial.println(ssid);
+  DEBUG_SERIAL.println();
+  DEBUG_SERIAL.print("Connecting to wifi: ");
+  DEBUG_SERIAL.println(ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    Serial.print(".");
+    DEBUG_SERIAL.print(".");
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  DEBUG_SERIAL.println("");
+  DEBUG_SERIAL.println("WiFi connected");
+  DEBUG_SERIAL.print("IP address: ");
+  DEBUG_SERIAL.println(WiFi.localIP());
 
   client = new HTTPSRedirect(httpsPort);
   client->setInsecure();
@@ -61,41 +71,47 @@ void setup()
       break;
     }
     else
-      Serial.println("Connection failed. Retrying...");
+      DEBUG_SERIAL.println("Connection failed. Retrying...");
   }
 
   if (!flag)
   {
-    Serial.print("Could not connect to server: ");
-    Serial.println(host);
-    Serial.println("Exiting...");
+    DEBUG_SERIAL.print("Could not connect to server: ");
+    DEBUG_SERIAL.println(host);
+    DEBUG_SERIAL.println("Exiting...");
     return;
   }
-  Serial.println("Starting...");
-  Serial.println();
+  DEBUG_SERIAL.println("Starting...");
+  DEBUG_SERIAL.println();
 
   delay(2000);
+#if IS_LED_ON
   digitalWrite(LED_BUILTIN, HIGH);
+#endif
 }
 
 void loop()
 {
   // Get temperature event and print its value.
+#if IS_LED_ON
   digitalWrite(LED_BUILTIN, LOW);
+#endif
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
-  if (isnan(temperature) | isnan(humidity))
+  if (isnan(temperature) || isnan(humidity))
   {
-    Serial.println("Failed to read from DHT sensor!");
+    DEBUG_SERIAL.println(temperature);
+    DEBUG_SERIAL.println(humidity);
+    DEBUG_SERIAL.println("Failed to read from DHT sensor!");
     return;
   }
-  Serial.println();
-  Serial.print(F("Temperature: "));
-  Serial.print(temperature);
-  Serial.println(F("°C"));
-  Serial.print(F("Humidity: "));
-  Serial.print(humidity);
-  Serial.println(F("%"));
+  DEBUG_SERIAL.println();
+  DEBUG_SERIAL.print(F("Temperature: "));
+  DEBUG_SERIAL.print(temperature);
+  DEBUG_SERIAL.println(F("°C"));
+  DEBUG_SERIAL.print(F("Humidity: "));
+  DEBUG_SERIAL.print(humidity);
+  DEBUG_SERIAL.println(F("%"));
 
   // send data to google script
   payload["command"] = "appendRow";
@@ -116,14 +132,15 @@ void loop()
 
   client->POST(url, host, payloadStr, false);
 
-  if (client->getResponseBody().compareTo("Success\r\n") == 0)
-    Serial.println(F("Data sent to Google Script"));
+  if (client->getResponseBody().compareTo("Success\r\n") == 0) {
+    DEBUG_SERIAL.println(F("Data sent to Google Script"));
+  }
   else
   {
-    Serial.print("Payload: ");
-    Serial.println(payloadStr);
-    Serial.println("Error sending data to Google Script");
-    Serial.println(client->getResponseBody());
+    DEBUG_SERIAL.print("Payload: ");
+    DEBUG_SERIAL.println(payloadStr);
+    DEBUG_SERIAL.println("Error sending data to Google Script");
+    DEBUG_SERIAL.println(client->getResponseBody());
   }
 
   // Disconnect the client from the server when intervals between requests is too long
@@ -131,6 +148,8 @@ void loop()
   client->stop();
   payload.clear(); // clear payload for next request (some errors can occur if not)
 
+#if IS_LED_ON
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(sampleDelayMS);
+#endif
+  delay(measurementDelayMS);
 }
