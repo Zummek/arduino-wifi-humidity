@@ -10,8 +10,10 @@
 // true to enable debug messages over serial port, 
 // false to disable and use LED to indicate status
 #define DEBUG true
-#define FORCE_LED_ON false
 #define DEBUG_SERIAL if(DEBUG)Serial
+// If You can use internal LED with serial communcation, set to true
+// Problem is with ESP-01 where internal led is on the same wire with TX
+#define FORCE_LED_ON false
 #define IS_LED_ON !DEBUG || FORCE_LED_ON
 
 #define MEASUREMENT_DELAY_MS 1000UL * 60 * 5 // 5 minutes
