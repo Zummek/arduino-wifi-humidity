@@ -24,8 +24,6 @@ System to collecting data about temperature and humidity in apartment.
 
 ## How is it working?
 
----
-
 Controller every X minutes collects data(temperature, relative humidity) from sensor. Next data are serializes to JSON and send to Google Script which process data and insert them as new row in Google Sheet. Data are broken down into months in sheets.
 
 There is a chart in the worksheet that show changes of values over time.
@@ -33,8 +31,6 @@ There is a chart in the worksheet that show changes of values over time.
 Code is not perfect because is simple. :)
 
 ## What to look for?
-
----
 
 ### Wi-Fi settings - special characters
 
@@ -53,8 +49,6 @@ Settings: `DEBUG` and `FORCE_LED_ON`.
 
 ## Getting started
 
----
-
 - There is a settings file (include/settings.h). Configure them for your own use.
 - Create Google Script.
   1. Create new sheet, open sheep.
@@ -72,8 +66,6 @@ Settings: `DEBUG` and `FORCE_LED_ON`.
 To be continued...
 
 ## TODO:
-
----
 
 - Hide sensitive data from platformio.ini to environment variables.
   - There was a problem with getting env variables over `sysenv` section(platformio)
