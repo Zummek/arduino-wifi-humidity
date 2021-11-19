@@ -38,11 +38,6 @@ function doPost(data) {
   return ContentService.createTextOutput(response);
 }
 
-function doGet() {
-  var sheet = createDefaultSheet();
-  ContentService.createTextOutput(sheet.getName());
-}
-
 function getSheetNameByDate(date) {
   var month = date.getMonth() + 1;
   var year = date.getFullYear();
