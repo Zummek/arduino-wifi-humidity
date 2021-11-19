@@ -5,8 +5,6 @@
 
 DHT dht(DHTPIN, DHTTYPE);
 
-uint32_t const measurementDelayMS = 1000UL * 60 * 5; // 5 minutes
-
 float temperature;
 float humidity;
 
@@ -57,5 +55,9 @@ void loop()
   digitalWrite(LED_BUILTIN, HIGH);
 #endif
 
-  delay(measurementDelayMS);
+#if DEEP_SLEEP_READY
+  ESP.deepSleep(MEASUREMENT_DELAY_MS * 1000);
+#else
+  delay(MEASUREMENT_DELAY_MS);
+#endif
 }
