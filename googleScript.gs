@@ -44,7 +44,7 @@ function doGet() {
 }
 
 function getSheetNameByDate(date) {
-  var month = date.getMonth();
+  var month = date.getMonth() + 1;
   var year = date.getFullYear();
   return month.toString() + '.' + year.toString();
 }
