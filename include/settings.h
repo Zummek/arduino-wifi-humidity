@@ -1,7 +1,7 @@
 #ifndef SETTINGS_h
 #define SETTINGS_h
 
-#define DHTPIN 2      // Digital pin connected to the DHT sensor
+#define DHTPIN D1      // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22 // DHT 22 (AM2302)
 
 #define DEEP_SLEEP_READY false

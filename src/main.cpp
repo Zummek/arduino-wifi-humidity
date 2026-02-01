@@ -56,7 +56,7 @@ void loop()
 #endif
 
 #if DEEP_SLEEP_READY
-  ESP.deepSleep(MEASUREMENT_DELAY_MS * 1000);
+  ESP.deepSleep(MEASUREMENT_DELAY_MS * 1000UL);
 #else
   delay(MEASUREMENT_DELAY_MS);
 #endif
